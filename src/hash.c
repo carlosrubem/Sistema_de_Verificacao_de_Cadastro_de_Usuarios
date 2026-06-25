@@ -4,7 +4,6 @@
 #include "hash.h"
 
 // Implementação manual da Função Hash
-// Utiliza o clássico algoritmo djb2, que é excelente para strings.
 unsigned int hash_function(const char* str) {
     unsigned long hash = 5381;
     int c;
