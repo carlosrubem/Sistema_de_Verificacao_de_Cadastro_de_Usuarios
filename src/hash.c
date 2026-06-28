@@ -3,18 +3,59 @@
 #include <string.h>
 #include "hash.h"
 
-// Implementação manual da Função Hash
-unsigned int hash_function(const char* str) {
-    unsigned long hash = 5381;
-    int c;
+/*
+ * O tamanho da Tabela Hash deve ser um número primo para minimizar colisões.
+ * OBS: Segundo o documento, a melhor implementação deve justificar a 
+ * dimensão da tabela considerando o fator de carga (load factor).
+ * Você poderá alterar este valor posteriormente para os testes de 1.000, 
+ * 10.000 e 100.000 registros.
+ */
+#define HASH_SIZE 100003 
 
-    while ((c = *str++)) {
-        hash = ((hash << 5) + hash) + c; // hash * 33 + c
+/*
+ * Estrutura do nó para tratar colisões via Encadeamento Externo.
+ * O ID possui 11 caracteres (8 letras + 3 números) + 1 caractere nulo (\0).
+ */
+typedef struct Node {
+    char id[12];
+    struct Node* next;
+} Node;
+
+// Função para validar ID no formato: 8 letras + 3 números
+bool validar_id(const char* id) {
+    // Verificar tamanho
+    if (strlen(id) != 11) {
+        return false;
     }
     
-    return hash % HASH_SIZE;
+    // Verificar primeiros 8 caracteres (devem ser letras maiúsculas ou minúsculas)
+    for (int i = 0; i < 8; i++) {
+        if (!((id[i] >= 'A' && id[i] <= 'Z') || (id[i] >= 'a' && id[i] <= 'z'))) {
+            return false;
+        }
+    }
+    
+    // Verificar últimos 3 caracteres (devem ser números)
+    for (int i = 8; i < 11; i++) {
+        if (!(id[i] >= '0' && id[i] <= '9')) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+// Função para limpar o buffer de entrada
+void limpar_buffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
 }
 
+/* Estrutura principal da Tabela Hash */
+typedef struct {
+    Node** table; // Vetor de ponteiros para os nós
+} HashTable;
+
+// Inicializa a tabela hash
 // Cria e inicializa a Tabela Hash
 HashTable* create_hash_table() {
     HashTable* ht = (HashTable*)malloc(sizeof(HashTable));
@@ -34,34 +75,19 @@ HashTable* create_hash_table() {
     return ht;
 }
 
-// Operação de inserção com encadeamento externo
-bool insert_hash(HashTable* ht, const char* id) {
-    // 1. Verificar se o usuário já existe para não inserir duplicados
-    if (search_hash(ht, id)) {
-        return false; // Usuário já está na tabela
-    }
+// Função Hash manual
+// Implementação manual da Função Hash
+unsigned int hash_function(const char* str) {
+    unsigned long hash = 5381;
+    int c;
 
-    // 2. Calcular o índice usando a função hash
-    unsigned int index = hash_function(id);
-
-    // 3. Criar o novo nó
-    Node* new_node = (Node*)malloc(sizeof(Node));
-    if (new_node == NULL) {
-        printf("Erro ao alocar memoria para o novo usuario.\n");
-        return false;
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c; // hash * 33 + c
     }
     
-    // Copiar a string para o nó
-    strncpy(new_node->id, id, sizeof(new_node->id) - 1);
-    new_node->id[11] = '\0'; // Garantir terminação da string
-
-    // 4. Inserir no início da lista encadeada (tratamento de colisão)
-    new_node->next = ht->table[index];
-    ht->table[index] = new_node;
-
-    return true; // Inserido com sucesso
+    return hash % HASH_SIZE;
 }
-
+// Operação de Busca
 // Operação de busca
 bool search_hash(HashTable* ht, const char* id) {
     // 1. Calcular o índice
@@ -80,7 +106,38 @@ bool search_hash(HashTable* ht, const char* id) {
 
     return false; // Não encontrou
 }
+// Operação de Inserção
+// Operação de inserção com encadeamento externo
+bool insert_hash(HashTable* ht, const char* id) {
+    // 1. Verificar se o usuário já existe para não inserir duplicados
+    if (search_hash(ht, id)) {
+        return false; // Usuário já está na tabela
+    }
 
+    // 2. Calcular o índice usando a função hash
+    unsigned int index = hash_function(id);
+
+    // 3. Criar o novo nó
+    Node* new_node = (Node*)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        printf("Erro ao alocar memoria para o novo usuario.\n");
+        return false;
+    }
+   
+    // Copiar a string para o nó
+    strncpy(new_node->id, id, sizeof(new_node->id) - 1);
+    new_node->id[11] = '\0'; // Garantir terminação da string
+
+    // 4. Inserir no início da lista encadeada (tratamento de colisão)
+    new_node->next = ht->table[index];
+    ht->table[index] = new_node;
+
+    return true; // Inserido com sucesso
+}
+
+
+
+// Libera a memória alocada
 // Libera a memória para evitar memory leaks (boa prática em C)
 void free_hash_table(HashTable* ht) {
     if (ht == NULL) return;
@@ -96,3 +153,5 @@ void free_hash_table(HashTable* ht) {
     free(ht->table);
     free(ht);
 }
+
+#endif
