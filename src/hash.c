@@ -1,8 +1,7 @@
-#ifndef HASH_H
-#define HASH_H
-
-#include <stdbool.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "hash.h
 /*
  * O tamanho da Tabela Hash deve ser um número primo para minimizar colisões.
  * OBS: Segundo o documento, a melhor implementação deve justificar a 
