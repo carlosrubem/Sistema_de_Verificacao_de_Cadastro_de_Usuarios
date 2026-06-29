@@ -1,9 +1,14 @@
-#include <stdio.h>
+/*#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "bloom.h"
+*/
+#ifndef BLOOM_H
+#define BLOOM_H
 
+#include <stdbool.h>
+#include <stdint.h>
 
 /*
  * Constantes internas do algoritmo FNV-1a de 64 bits.
