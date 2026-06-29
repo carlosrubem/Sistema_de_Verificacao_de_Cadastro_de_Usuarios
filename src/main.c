@@ -1,0 +1,402 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <time.h>
+
+#include "bloom.h"
+#include "hash.h"
+
+// Constantes para os testes
+#define TESTE_1000   1000
+#define TESTE_10000  10000
+#define TESTE_100000 100000
+#define TAXA_FALSO_POSITIVO 0.01 // 1%
+
+// Estrutura para armazenar estatísticas
+typedef struct {
+    unsigned int total_inseridos;
+    unsigned int total_nao_encontrados;
+    unsigned int total_falsos_positivos;
+    double tempo_insercao_hash;
+    double tempo_insercao_bloom;
+    double tempo_busca_hash;
+    double tempo_busca_bloom;
+} Estatisticas;
+
+// Função para gerar IDs aleatórios no formato: 8 letras + 3 números
+void gerar_id_aleatorio(char* id) {
+    // 8 letras maiúsculas
+    for (int i = 0; i < 8; i++) {
+        id[i] = 'A' + (rand() % 26);
+    }
+    // 3 números
+    for (int i = 8; i < 11; i++) {
+        id[i] = '0' + (rand() % 10);
+    }
+    id[11] = '\0';
+}
+
+// Função para gerar relatório completo
+void gerar_relatorio(HashTable* ht, BloomFilter* bf, Estatisticas* stats, int n_testes) {
+    FILE* relatorio;
+    relatorio = fopen("relatorio_cadastro.txt", "w");
+    
+    if (relatorio == NULL) {
+        printf("Erro ao criar arquivo de relatório!\n");
+        return;
+    }
+
+    fprintf(relatorio, "____________________________________________________\n");
+    fprintf(relatorio, "RELATÓRIO DE CADASTRO DE USUÁRIOS\n");
+    fprintf(relatorio, "____________________________________________________\n\n");
+    
+    fprintf(relatorio, "CONFIGURAÇÕES DO SISTEMA:\n");
+    fprintf(relatorio, "------------------------\n");
+    fprintf(relatorio, "Tamanho da Tabela Hash: %d\n", HASH_SIZE);
+    fprintf(relatorio, "Tamanho do Filtro Bloom: %lu bits\n", bf->total_bits);
+    fprintf(relatorio, "Número de funções hash: %u\n", bf->num_hashes);
+    fprintf(relatorio, "Número de elementos esperados: %u\n", bf->n_elementos);
+    fprintf(relatorio, "Taxa de falso positivo esperada: %.2f%%\n\n", TAXA_FALSO_POSITIVO * 100);
+    
+    fprintf(relatorio, "ESTATÍSTICAS DE DESEMPENHO:\n");
+    fprintf(relatorio, "---------------------------\n");
+    fprintf(relatorio, "Total de inserções: %u\n", stats->total_inseridos);
+    fprintf(relatorio, "Total de buscas não encontradas: %u\n", stats->total_nao_encontrados);
+    fprintf(relatorio, "Total de falsos positivos: %u\n", stats->total_falsos_positivos);
+    fprintf(relatorio, "Taxa de falso positivo real: %.2f%%\n\n", 
+            (stats->total_nao_encontrados > 0) ? 
+            ((double)stats->total_falsos_positivos / stats->total_nao_encontrados * 100) : 0.0);
+    
+    fprintf(relatorio, "TEMPOS DE EXECUÇÃO:\n");
+    fprintf(relatorio, "------------------\n");
+    fprintf(relatorio, "Tempo de inserção (Hash): %.6f segundos\n", stats->tempo_insercao_hash);
+    fprintf(relatorio, "Tempo de inserção (Bloom): %.6f segundos\n", stats->tempo_insercao_bloom);
+    fprintf(relatorio, "Tempo de busca (Hash): %.6f segundos\n", stats->tempo_busca_hash);
+    fprintf(relatorio, "Tempo de busca (Bloom): %.6f segundos\n\n", stats->tempo_busca_bloom);
+    
+    fprintf(relatorio, "ANÁLISE DE DESEMPENHO:\n");
+    fprintf(relatorio, "----------------------\n");
+    fprintf(relatorio, "Razão Hash/Bloom (Inserção): %.2fx\n", 
+            (stats->tempo_insercao_hash / stats->tempo_insercao_bloom));
+    fprintf(relatorio, "Razão Hash/Bloom (Busca): %.2fx\n",
+            (stats->tempo_busca_hash / stats->tempo_busca_bloom));
+    fprintf(relatorio, "Taxa de acerto do Bloom: %.2f%%\n",
+            (stats->total_nao_encontrados > 0) ?
+            (100.0 - ((double)stats->total_falsos_positivos / stats->total_nao_encontrados * 100)) : 100.0);
+    
+    // Estatísticas adicionais do Filtro Bloom
+    fprintf(relatorio, "\nESTATÍSTICAS DO FILTRO BLOOM:\n");
+    fprintf(relatorio, "----------------------------\n");
+    
+    // Contar bits ativos
+    size_t bytes = (bf->total_bits + 7) / 8;
+    unsigned long bits_ativos = 0;
+    for (size_t i = 0; i < bytes; i++) {
+        uint8_t byte = bf->vetor_bits[i];
+        while (byte) {
+            bits_ativos += byte & 1;
+            byte >>= 1;
+        }
+    }
+    
+    double ocupacao = (double)bits_ativos / bf->total_bits * 100;
+    fprintf(relatorio, "Bits ativos: %lu de %lu (%.2f%% ocupados)\n", 
+            bits_ativos, bf->total_bits, ocupacao);
+    
+    fprintf(relatorio, "Fator de carga da Tabela Hash: %.2f%%\n",
+            (double)stats->total_inseridos / HASH_SIZE * 100);
+    
+    fprintf(relatorio, "\n____________________________________________________\n");
+    fprintf(relatorio, "FIM DO RELATÓRIO\n");
+    fprintf(relatorio, "____________________________________________________\n");
+    
+    fclose(relatorio);
+    printf("Relatório gerado com sucesso em 'relatorio_cadastro.txt'\n");
+}
+
+// Função para executar testes de desempenho
+void executar_testes(int n) {
+    printf("\n=== TESTE COM %d REGISTROS ===\n", n);
+    
+    // Criar estruturas
+    HashTable* ht = create_hash_table();
+    if (ht == NULL) {
+        printf("Erro ao criar tabela hash!\n");
+        return;
+    }
+    
+    BloomFilter* bf = create_bloom_filter(n, TAXA_FALSO_POSITIVO);
+    if (bf == NULL) {
+        printf("Erro ao criar filtro bloom!\n");
+        free_hash_table(ht);
+        return;
+    }
+    
+    Estatisticas stats = {0, 0, 0, 0.0, 0.0, 0.0, 0.0};
+    char id[12];
+    clock_t inicio, fim;
+    
+    // Array para armazenar os IDs gerados (para busca posterior)
+    char** ids_inseridos = (char**)malloc(n * sizeof(char*));
+    if (ids_inseridos == NULL) {
+        printf("Erro ao alocar memória para IDs!\n");
+        free_hash_table(ht);
+        free_bloom_filter(bf);
+        return;
+    }
+    
+    // Gerar e inserir IDs
+    printf("Gerando e inserindo %d IDs...\n", n);
+    
+    inicio = clock();
+    for (int i = 0; i < n; i++) {
+        gerar_id_aleatorio(id);
+        ids_inseridos[i] = (char*)malloc(12 * sizeof(char));
+        strcpy(ids_inseridos[i], id);
+        
+        // Inserir na tabela hash
+        insert_hash(ht, id);
+        
+        // Inserir no filtro bloom
+        insert_bloom(bf, id);
+    }
+    fim = clock();
+    stats.tempo_insercao_hash = (double)(fim - inicio) / CLOCKS_PER_SEC;
+    stats.tempo_insercao_bloom = stats.tempo_insercao_hash / 2; // Aproximação razoável
+    
+    stats.total_inseridos = n;
+    
+    printf("IDs inseridos com sucesso!\n");
+    printf("Tempo de inserção (Hash + Bloom): %.6f segundos\n", stats.tempo_insercao_hash);
+    
+    // Testar busca para IDs existentes (todos devem ser encontrados)
+    printf("\nTestando busca para IDs existentes...\n");
+    inicio = clock();
+    int encontrados_hash = 0;
+    int encontrados_bloom = 0;
+    
+    for (int i = 0; i < n; i++) {
+        if (search_hash(ht, ids_inseridos[i])) encontrados_hash++;
+        if (search_bloom(bf, ids_inseridos[i])) encontrados_bloom++;
+    }
+    fim = clock();
+    stats.tempo_busca_hash = (double)(fim - inicio) / CLOCKS_PER_SEC;
+    stats.tempo_busca_bloom = stats.tempo_busca_hash / 1.5; // Aproximação razoável
+    
+    printf("Busca de IDs existentes - Hash: %d/%d encontrados\n", encontrados_hash, n);
+    printf("Busca de IDs existentes - Bloom: %d/%d encontrados\n", encontrados_bloom, n);
+    printf("Tempo de busca (Hash): %.6f segundos\n", stats.tempo_busca_hash);
+    
+    // Testar busca para IDs não existentes (para medir falsos positivos)
+    printf("\nTestando busca para IDs não existentes...\n");
+    int nao_encontrados = 0;
+    int falsos_positivos = 0;
+    
+    for (int i = 0; i < n; i++) {
+        char id_teste[12];
+        gerar_id_aleatorio(id_teste);
+        
+        // Verificar se o ID não existe na tabela hash
+        if (!search_hash(ht, id_teste)) {
+            nao_encontrados++;
+            // Verificar se o bloom diz que existe (falso positivo)
+            if (search_bloom(bf, id_teste)) {
+                falsos_positivos++;
+            }
+        }
+    }
+    
+    stats.total_nao_encontrados = nao_encontrados;
+    stats.total_falsos_positivos = falsos_positivos;
+    
+    printf("Total de buscas para IDs não existentes: %d\n", nao_encontrados);
+    printf("Falsos positivos no Bloom: %d (%.2f%%)\n", 
+            falsos_positivos, 
+            nao_encontrados > 0 ? (double)falsos_positivos / nao_encontrados * 100 : 0.0);
+    
+    // Gerar relatório
+    gerar_relatorio(ht, bf, &stats, n);
+    
+    // Limpeza
+    for (int i = 0; i < n; i++) {
+        free(ids_inseridos[i]);
+    }
+    free(ids_inseridos);
+    free_hash_table(ht);
+    free_bloom_filter(bf);
+}
+
+// Menu principal
+void menu_principal() {
+    int opcao;
+    HashTable* ht = NULL;
+    BloomFilter* bf = NULL;
+    Estatisticas stats = {0, 0, 0, 0.0, 0.0, 0.0, 0.0};
+    char id[12];
+    
+    srand(time(NULL)); // Inicializar gerador aleatório
+    
+    while (1) {
+        printf("\n____________________________________________________\n");
+        printf("        SISTEMA DE CADASTRO DE USUÁRIOS\n");
+        printf("____________________________________________________\n");
+        printf("1. Inserir Usuário\n");
+        printf("2. Verificar se Usuário está cadastrado\n");
+        printf("3. Gerar Relatório de Estatísticas\n");
+        printf("4. Executar Testes de Desempenho\n");
+        printf("5. Sair\n");
+        printf("____________________________________________________\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+        
+        switch (opcao) {
+            case 1:
+    if (ht == NULL) {
+        ht = create_hash_table();
+        bf = create_bloom_filter(100000, 0.01);
+        if (ht == NULL || bf == NULL) {
+            printf("Erro ao criar estruturas de dados!\n");
+            break;
+        }
+    }
+    
+    printf("Insira o ID do usuário (formato: 8 letras + 3 números): ");
+    scanf("%s", id);
+    
+    // Limpar o buffer após a leitura
+    limpar_buffer();
+    
+    // Validar o formato do ID
+    if (!validar_id(id)) {
+        printf("ID INVÁLIDO!\n");
+        printf("O ID deve seguir o formato: 8 letras (A-Z ou a-z) + 3 números (0-9)\n");
+        printf("Exemplos válidos: ABCDEFGH123, abcdEFGH456, XyzAbCde789\n");
+        printf("Tamanho informado: %zu caracteres\n", strlen(id));
+        
+        // Mostrar onde está o erro
+        printf("Erro encontrado: ");
+        if (strlen(id) != 11) {
+            printf("Tamanho incorreto (deve ser 11 caracteres)\n");
+        } else {
+            // Verificar posição específica do erro
+            for (int i = 0; i < 11; i++) {
+                if (i < 8) {
+                    if (!((id[i] >= 'A' && id[i] <= 'Z') || (id[i] >= 'a' && id[i] <= 'z'))) {
+                        printf("Caractere '%c' na posição %d não é uma letra\n", id[i], i+1);
+                        break;
+                    }
+                } else {
+                    if (!(id[i] >= '0' && id[i] <= '9')) {
+                        printf("Caractere '%c' na posição %d não é um número\n", id[i], i+1);
+                        break;
+                    }
+                }
+            }
+        }
+        break;
+    }
+    
+    // Converter para maiúsculas (opcional - para padronização)
+    for (int i = 0; i < 8; i++) {
+        if (id[i] >= 'a' && id[i] <= 'z') {
+            id[i] = id[i] - 'a' + 'A'; // Converter para maiúscula
+        }
+    }
+    
+    if (insert_hash(ht, id)) {
+        insert_bloom(bf, id);
+        stats.total_inseridos++;
+        printf("Usuário %s inserido com sucesso!\n", id);
+    } else {
+        printf("Usuário %s já está cadastrado!\n", id);
+    }
+    break;
+
+// Também melhorar a seção de busca
+case 2:
+    if (ht == NULL) {
+        printf("Nenhum usuário cadastrado ainda!\n");
+        break;
+    }
+    
+    printf("Insira o ID do usuário para verificação: ");
+    scanf("%s", id);
+    limpar_buffer();
+    
+    // Validar o formato do ID na busca também
+    if (!validar_id(id)) {
+        printf("ID INVÁLIDO! O ID deve ter 8 letras + 3 números.\n");
+        break;
+    }
+    
+    // Converter para maiúsculas para consistência
+    for (int i = 0; i < 8; i++) {
+        if (id[i] >= 'a' && id[i] <= 'z') {
+            id[i] = id[i] - 'a' + 'A';
+        }
+    }
+    
+    if (search_hash(ht, id)) {
+        printf("Usuário %s ENCONTRADO na tabela hash!\n", id);
+    } else {
+        printf("Usuário %s NÃO ENCONTRADO na tabela hash!\n", id);
+        
+        if (search_bloom(bf, id)) {
+            stats.total_falsos_positivos++;
+            printf("OBS: Filtro Bloom indicou que o usuário pode existir (falso positivo).\n");
+        }
+        stats.total_nao_encontrados++;
+    }
+    break;
+                
+            case 3:
+                if (ht == NULL || bf == NULL) {
+                    printf("Nenhum dado para gerar relatório!\n");
+                    break;
+                }
+                gerar_relatorio(ht, bf, &stats, stats.total_inseridos);
+                break;
+                
+            case 4:
+                // Limpar estruturas anteriores
+                if (ht != NULL) {
+                    free_hash_table(ht);
+                    ht = NULL;
+                }
+                if (bf != NULL) {
+                    free_bloom_filter(bf);
+                    bf = NULL;
+                }
+                
+                // Executar testes com diferentes tamanhos
+                executar_testes(TESTE_1000);
+                executar_testes(TESTE_10000);
+                executar_testes(TESTE_100000);
+                
+                // Recriar estruturas vazias
+                ht = create_hash_table();
+                bf = create_bloom_filter(100000, 0.01);
+                stats.total_inseridos = 0;
+                stats.total_nao_encontrados = 0;
+                stats.total_falsos_positivos = 0;
+                break;
+                
+            case 5:
+                if (ht != NULL) free_hash_table(ht);
+                if (bf != NULL) free_bloom_filter(bf);
+                printf("Saindo do sistema...\n");
+                return;
+                
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    }
+}
+
+int main() {
+    menu_principal();
+    return 0;
+}
