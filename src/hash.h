@@ -20,7 +20,7 @@ typedef struct Node {
     char id[12];
     struct Node* next;
 } Node;
-
+bool validar_id(const char* id);
 /* Estrutura principal da Tabela Hash */
 typedef struct {
     Node** table; // Vetor de ponteiros para os nós
