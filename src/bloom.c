@@ -1,8 +1,8 @@
-#ifndef BLOOM_H
-#define BLOOM_H
-
-#include <stdbool.h>
-#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include "bloom.h"
 
 /*
  * Comprimento do identificador de usuário no sistema.
@@ -41,4 +41,3 @@ bool search_bloom(BloomFilter* bf, const char* id);
 // Libera a memória alocada pelo filtro
 void free_bloom_filter(BloomFilter* bf);
 
-#endif
