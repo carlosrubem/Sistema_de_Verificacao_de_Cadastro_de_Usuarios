@@ -229,6 +229,40 @@ void executar_testes(int n) {
     free_bloom_filter(bf);
 }
 
+// Função para salvar usuário em arquivo .txt na pasta ../data
+void salvar_usuario_arquivo(const char* id) {
+    // Criar diretório ../data se não existir
+    system("mkdir -p ../data");
+    
+    // Caminho do arquivo
+    char caminho_arquivo[256];
+    snprintf(caminho_arquivo, sizeof(caminho_arquivo), "../data/usuarios.txt");
+    
+    // Abrir arquivo em modo append (adiciona ao final)
+    FILE* arquivo = fopen(caminho_arquivo, "a");
+    
+    if (arquivo == NULL) {
+        printf("Erro ao criar/abrir arquivo de usuários em ../data!\n");
+        return;
+    }
+    
+    // Adicionar timestamp e ID do usuário
+    time_t agora = time(NULL);
+    struct tm* tempo_local = localtime(&agora);
+    
+    fprintf(arquivo, "[%04d-%02d-%02d %02d:%02d:%02d] Usuário cadastrado: %s\n",
+            tempo_local->tm_year + 1900,
+            tempo_local->tm_mon + 1,
+            tempo_local->tm_mday,
+            tempo_local->tm_hour,
+            tempo_local->tm_min,
+            tempo_local->tm_sec,
+            id);
+    
+    fclose(arquivo);
+    printf("Usuário %s salvo no arquivo ../data/usuarios.txt\n", id);
+}
+
 // Menu principal
 void menu_principal() {
     int opcao;
@@ -309,6 +343,7 @@ void menu_principal() {
     if (insert_hash(ht, id)) {
         insert_bloom(bf, id);
         stats.total_inseridos++;
+        salvar_usuario_arquivo(id);
         printf("Usuário %s inserido com sucesso!\n", id);
     } else {
         printf("Usuário %s já está cadastrado!\n", id);
