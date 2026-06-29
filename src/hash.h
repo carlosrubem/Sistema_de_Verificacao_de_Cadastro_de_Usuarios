@@ -26,6 +26,9 @@ typedef struct {
     Node** table; // Vetor de ponteiros para os nós
 } HashTable;
 
+// Função para limpar o buffer de entrada
+void limpar_buffer();
+
 // Inicializa a tabela hash
 HashTable* create_hash_table();
 
