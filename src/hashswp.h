@@ -1,7 +1,12 @@
-#include <stdio.h>
+/*#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hash.h"
+#include "hash.h"*/
+#ifndef HASH_H
+#define HASH_H
+
+#include <stdbool.h>
+
 
 /*
  * O tamanho da Tabela Hash deve ser um número primo para minimizar colisões.
@@ -153,5 +158,5 @@ void free_hash_table(HashTable* ht) {
     free(ht->table);
     free(ht);
 }
-
+#endif
 
