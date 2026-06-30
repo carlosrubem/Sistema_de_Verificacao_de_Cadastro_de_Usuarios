@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <time.h>
 
+
 #include "bloom.h"
 #include "hash.h"
 
@@ -14,6 +15,10 @@
 #define TESTE_10000  10000
 #define TESTE_100000 100000
 #define TAXA_FALSO_POSITIVO 0.01 // 1%
+#define MAX_ID_LENGTH 8 // Comprimento máximo do ID
+
+// NOTA: As funções validar_id() e limpar_buffer() já estão definidas em hash.h
+// Removidas daqui para evitar redefinição
 
 // Estrutura para armazenar estatísticas
 typedef struct {
@@ -26,21 +31,28 @@ typedef struct {
     double tempo_busca_bloom;
 } Estatisticas;
 
-// Função para gerar IDs aleatórios no formato: 8 letras + 3 números
+// Função para gerar IDs aleatórios com até 8 caracteres (letras e números)
 void gerar_id_aleatorio(char* id) {
-    // 8 letras maiúsculas
-    for (int i = 0; i < 8; i++) {
-        id[i] = 'A' + (rand() % 26);
+    // Gera um comprimento aleatório entre 1 e MAX_ID_LENGTH
+    int comprimento = 1 + (rand() % MAX_ID_LENGTH);
+    
+    // Gera caracteres aleatórios (letras maiúsculas, minúsculas e números)
+    for (int i = 0; i < comprimento; i++) {
+        int tipo = rand() % 3; // 0: maiúscula, 1: minúscula, 2: número
+        switch (tipo) {
+            case 0:
+                id[i] = 'A' + (rand() % 26);
+                break;
+            case 1:
+                id[i] = 'a' + (rand() % 26);
+                break;
+            case 2:
+                id[i] = '0' + (rand() % 10);
+                break;
+        }
     }
-    // 3 números
-    for (int i = 8; i < 11; i++) {
-        id[i] = '0' + (rand() % 10);
-    }
-    id[11] = '\0';
+    id[comprimento] = '\0';
 }
-
-// NOTA: As funções validar_id() e limpar_buffer() já estão definidas em hash.h
-// Removidas daqui para evitar redefinição
 
 // Função para gerar relatório completo
 void gerar_relatorio(HashTable* ht, BloomFilter* bf, Estatisticas* stats, int n_testes) {
@@ -63,6 +75,11 @@ void gerar_relatorio(HashTable* ht, BloomFilter* bf, Estatisticas* stats, int n_
     fprintf(relatorio, "Número de funções hash: %u\n", bf->num_hashes);
     fprintf(relatorio, "Número de elementos esperados: %u\n", bf->n_elementos);
     fprintf(relatorio, "Taxa de falso positivo esperada: %.2f%%\n\n", TAXA_FALSO_POSITIVO * 100);
+    
+    fprintf(relatorio, "RESTRIÇÕES DE ID:\n");
+    fprintf(relatorio, "-----------------\n");
+    fprintf(relatorio, "Comprimento máximo: %d caracteres\n", MAX_ID_LENGTH);
+    fprintf(relatorio, "Formato: Qualquer combinação de caracteres\n\n");
     
     fprintf(relatorio, "ESTATÍSTICAS DE DESEMPENHO:\n");
     fprintf(relatorio, "---------------------------\n");
@@ -139,7 +156,7 @@ void executar_testes(int n) {
     }
     
     Estatisticas stats = {0, 0, 0, 0.0, 0.0, 0.0, 0.0};
-    char id[12];
+    char id[MAX_ID_LENGTH + 1]; // +1 para o terminador nulo
     clock_t inicio, fim;
     
     // Array para armazenar os IDs gerados (para busca posterior)
@@ -157,7 +174,7 @@ void executar_testes(int n) {
     inicio = clock();
     for (int i = 0; i < n; i++) {
         gerar_id_aleatorio(id);
-        ids_inseridos[i] = (char*)malloc(12 * sizeof(char));
+        ids_inseridos[i] = (char*)malloc((strlen(id) + 1) * sizeof(char));
         strcpy(ids_inseridos[i], id);
         
         // Inserir na tabela hash
@@ -199,7 +216,7 @@ void executar_testes(int n) {
     int falsos_positivos = 0;
     
     for (int i = 0; i < n; i++) {
-        char id_teste[12];
+        char id_teste[MAX_ID_LENGTH + 1];
         gerar_id_aleatorio(id_teste);
         
         // Verificar se o ID não existe na tabela hash
@@ -250,21 +267,20 @@ void salvar_usuario_arquivo(const char* id) {
     }
     
     // Adicionar ID do usuário
-    
     fprintf(arquivo, "%s\n",id);
     
     fclose(arquivo);
     printf("Usuário %s salvo no arquivo ../data/usuarios.txt\n", id);
 }
 
-// NOVA FUNÇÃO: Carregar usuários do arquivo usuario.txt
+// Função para carregar usuários do arquivo usuario.txt
 int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stats) {
     FILE* arquivo = fopen("../data/usuarios.txt", "r");
     
     if (arquivo == NULL) {
         printf("Arquivo 'usuario.txt' não encontrado!\n");
         printf("Crie o arquivo 'usuario.txt' no diretorio data.\n");
-        printf("Formato: um ID por linha (8 letras + 3 números)\n");
+        printf("Formato: um ID por linha (até %d caracteres)\n", MAX_ID_LENGTH);
         return 0;
     }
     
@@ -297,18 +313,12 @@ int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stat
             continue;
         }
         
-        // Validar o formato do ID
+        // Validar o formato do ID (agora apenas verifica comprimento)
         if (!validar_id(id)) {
-            printf("Linha %d: ID inválido '%s' - ignorado\n", linha_atual, id);
+            printf("Linha %d: ID inválido '%s' (deve ter entre 1 e %d caracteres) - ignorado\n", 
+                   linha_atual, id, MAX_ID_LENGTH);
             invalidos++;
             continue;
-        }
-        
-        // Converter para maiúsculas para padronização
-        for (int i = 0; i < 8; i++) {
-            if (id[i] >= 'a' && id[i] <= 'z') {
-                id[i] = id[i] - 'a' + 'A';
-            }
         }
         
         // Inserir nas estruturas
@@ -335,15 +345,13 @@ int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stat
     return carregados;
 }
 
-
-
 // Menu principal
 void menu_principal() {
     int opcao;
     HashTable* ht = NULL;
     BloomFilter* bf = NULL;
     Estatisticas stats = {0, 0, 0, 0.0, 0.0, 0.0, 0.0};
-    char id[12];
+    char id[MAX_ID_LENGTH + 1]; // +1 para o terminador nulo
     
     srand(time(NULL)); // Inicializar gerador aleatório
     
@@ -356,10 +364,11 @@ void menu_principal() {
         printf("3. Gerar Relatório de Estatísticas\n");
         printf("4. Executar Testes de Desempenho\n");
         printf("5. Carregar usuários do arquivo usuario.txt\n");
-        printf("6. sair\n");
+        printf("6. Sair\n");
         printf("____________________________________________________\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
+        limpar_buffer();
         
         switch (opcao) {
             case 1:
@@ -372,56 +381,27 @@ void menu_principal() {
                     }
                 }
                 
-                printf("Insira o ID do usuário (formato: 8 letras + 3 números): ");
-                scanf("%s", id);
+                printf("Insira o ID do usuário (até %d caracteres): ", MAX_ID_LENGTH);
+                fgets(id, sizeof(id), stdin);
                 
-                // Limpar o buffer após a leitura
-                limpar_buffer();
+                // Remover newline
+                id[strcspn(id, "\n")] = '\0';
                 
-                // Validar o formato do ID
+                // Validar o formato do ID (agora apenas verifica comprimento)
                 if (!validar_id(id)) {
                     printf("ID INVÁLIDO!\n");
-                    printf("O ID deve seguir o formato: 8 letras (A-Z ou a-z) + 3 números (0-9)\n");
-                    printf("Exemplos válidos: ABCDEFGH123, abcdEFGH456, XyzAbCde789\n");
+                    printf("O ID deve ter entre 1 e %d caracteres.\n", MAX_ID_LENGTH);
                     printf("Tamanho informado: %zu caracteres\n", strlen(id));
-                    
-                    // Mostrar onde está o erro
-                    printf("Erro encontrado: ");
-                    if (strlen(id) != 11) {
-                        printf("Tamanho incorreto (deve ser 11 caracteres)\n");
-                    } else {
-                        // Verificar posição específica do erro
-                        for (int i = 0; i < 11; i++) {
-                            if (i < 8) {
-                                if (!((id[i] >= 'A' && id[i] <= 'Z') || (id[i] >= 'a' && id[i] <= 'z'))) {
-                                    printf("Caractere '%c' na posição %d não é uma letra\n", id[i], i+1);
-                                    break;
-                                }
-                            } else {
-                                if (!(id[i] >= '0' && id[i] <= '9')) {
-                                    printf("Caractere '%c' na posição %d não é um número\n", id[i], i+1);
-                                    break;
-                                }
-                            }
-                        }
-                    }
                     break;
-                }
-                
-                // Converter para maiúsculas para padronização
-                for (int i = 0; i < 8; i++) {
-                    if (id[i] >= 'a' && id[i] <= 'z') {
-                        id[i] = id[i] - 'a' + 'A';
-                    }
                 }
                 
                 if (insert_hash(ht, id)) {
                     insert_bloom(bf, id);
                     stats.total_inseridos++;
                     salvar_usuario_arquivo(id);
-                    printf("Usuário %s inserido com sucesso!\n", id);
+                    printf("Usuário '%s' inserido com sucesso!\n", id);
                 } else {
-                    printf("Usuário %s já está cadastrado!\n", id);
+                    printf("Usuário '%s' já está cadastrado!\n", id);
                 }
                 break;
 
@@ -431,27 +411,20 @@ void menu_principal() {
                     break;
                 }
                 
-                printf("Insira o ID do usuário para verificação: ");
-                scanf("%s", id);
-                limpar_buffer();
+                printf("Insira o ID do usuário para verificação (até %d caracteres): ", MAX_ID_LENGTH);
+                fgets(id, sizeof(id), stdin);
+                id[strcspn(id, "\n")] = '\0';
                 
                 // Validar o formato do ID na busca também
                 if (!validar_id(id)) {
-                    printf("ID INVÁLIDO! O ID deve ter 8 letras + 3 números.\n");
+                    printf("ID INVÁLIDO! O ID deve ter entre 1 e %d caracteres.\n", MAX_ID_LENGTH);
                     break;
                 }
                 
-                // Converter para maiúsculas para consistência
-                for (int i = 0; i < 8; i++) {
-                    if (id[i] >= 'a' && id[i] <= 'z') {
-                        id[i] = id[i] - 'a' + 'A';
-                    }
-                }
-                
                 if (search_hash(ht, id)) {
-                    printf("Usuário %s ENCONTRADO na tabela hash!\n", id);
+                    printf("Usuário '%s' ENCONTRADO na tabela hash!\n", id);
                 } else {
-                    printf("Usuário %s NÃO ENCONTRADO na tabela hash!\n", id);
+                    printf("Usuário '%s' NÃO ENCONTRADO na tabela hash!\n", id);
                     
                     if (search_bloom(bf, id)) {
                         stats.total_falsos_positivos++;
@@ -493,7 +466,7 @@ void menu_principal() {
                 stats.total_falsos_positivos = 0;
                 break;
                 
-            case 5: // NOVA OPÇÃO: Carregar usuários do arquivo
+            case 5:
                 if (ht == NULL) {
                     ht = create_hash_table();
                     bf = create_bloom_filter(100000, 0.01);
@@ -505,8 +478,6 @@ void menu_principal() {
                 
                 carregar_usuarios_arquivo(ht, bf, &stats);
                 break;
-                
-            
                 
             case 6:
                 if (ht != NULL) free_hash_table(ht);

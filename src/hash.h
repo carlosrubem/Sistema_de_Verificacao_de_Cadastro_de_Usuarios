@@ -28,24 +28,18 @@ typedef struct Node {
 
 // Função para validar ID no formato: 8 letras + 3 números
 bool validar_id(const char* id) {
-    // Verificar tamanho
-    if (strlen(id) != 11) {
+    if (id == NULL) {
         return false;
     }
     
-    // Verificar primeiros 8 caracteres (devem ser letras maiúsculas ou minúsculas)
-    for (int i = 0; i < 8; i++) {
-        if (!((id[i] >= 'A' && id[i] <= 'Z') || (id[i] >= 'a' && id[i] <= 'z'))) {
-            return false;
-        }
+    int comprimento = strlen(id);
+    
+    // Verifica se o comprimento está entre 1 e 8 caracteres
+    if (comprimento == 0 || comprimento > 8) {
+        return false;
     }
     
-    // Verificar últimos 3 caracteres (devem ser números)
-    for (int i = 8; i < 11; i++) {
-        if (!(id[i] >= '0' && id[i] <= '9')) {
-            return false;
-        }
-    }
+
     
     return true;
 }
