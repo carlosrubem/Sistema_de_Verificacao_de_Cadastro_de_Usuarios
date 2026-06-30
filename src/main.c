@@ -39,6 +39,9 @@ void gerar_id_aleatorio(char* id) {
     id[11] = '\0';
 }
 
+// NOTA: As funções validar_id() e limpar_buffer() já estão definidas em hash.h
+// Removidas daqui para evitar redefinição
+
 // Função para gerar relatório completo
 void gerar_relatorio(HashTable* ht, BloomFilter* bf, Estatisticas* stats, int n_testes) {
     FILE* relatorio;
@@ -246,22 +249,93 @@ void salvar_usuario_arquivo(const char* id) {
         return;
     }
     
-    // Adicionar timestamp e ID do usuário
-    time_t agora = time(NULL);
-    struct tm* tempo_local = localtime(&agora);
+    // Adicionar ID do usuário
     
-    fprintf(arquivo, "[%04d-%02d-%02d %02d:%02d:%02d] Usuário cadastrado: %s\n",
-            tempo_local->tm_year + 1900,
-            tempo_local->tm_mon + 1,
-            tempo_local->tm_mday,
-            tempo_local->tm_hour,
-            tempo_local->tm_min,
-            tempo_local->tm_sec,
-            id);
+    fprintf(arquivo, "%s\n",id);
     
     fclose(arquivo);
     printf("Usuário %s salvo no arquivo ../data/usuarios.txt\n", id);
 }
+
+// NOVA FUNÇÃO: Carregar usuários do arquivo usuario.txt
+int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stats) {
+    FILE* arquivo = fopen("../data/usuarios.txt", "r");
+    
+    if (arquivo == NULL) {
+        printf("Arquivo 'usuario.txt' não encontrado!\n");
+        printf("Crie o arquivo 'usuario.txt' no diretorio data.\n");
+        printf("Formato: um ID por linha (8 letras + 3 números)\n");
+        return 0;
+    }
+    
+    printf("\n=== CARREGANDO USUÁRIOS DO ARQUIVO usuario.txt ===\n");
+    
+    char linha[256];
+    int carregados = 0;
+    int invalidos = 0;
+    int duplicados = 0;
+    int linha_atual = 0;
+    
+    while (fgets(linha, sizeof(linha), arquivo) != NULL) {
+        linha_atual++;
+        
+        // Remover newline e espaços extras
+        linha[strcspn(linha, "\r\n")] = '\0';
+        
+        // Remover espaços em branco no início e fim
+        char* id = linha;
+        while (*id == ' ' || *id == '\t') id++;
+        
+        char* fim = id + strlen(id) - 1;
+        while (fim > id && (*fim == ' ' || *fim == '\t')) {
+            *fim = '\0';
+            fim--;
+        }
+        
+        // Pular linhas vazias e comentários (linhas que começam com #)
+        if (strlen(id) == 0 || id[0] == '#') {
+            continue;
+        }
+        
+        // Validar o formato do ID
+        if (!validar_id(id)) {
+            printf("Linha %d: ID inválido '%s' - ignorado\n", linha_atual, id);
+            invalidos++;
+            continue;
+        }
+        
+        // Converter para maiúsculas para padronização
+        for (int i = 0; i < 8; i++) {
+            if (id[i] >= 'a' && id[i] <= 'z') {
+                id[i] = id[i] - 'a' + 'A';
+            }
+        }
+        
+        // Inserir nas estruturas
+        if (insert_hash(ht, id)) {
+            insert_bloom(bf, id);
+            stats->total_inseridos++;
+            carregados++;
+            printf("Linha %d: Usuário %s cadastrado com sucesso!\n", linha_atual, id);
+        } else {
+            printf("Linha %d: Usuário %s já existe - ignorado\n", linha_atual, id);
+            duplicados++;
+        }
+    }
+    
+    fclose(arquivo);
+    
+    printf("\n=== RESUMO DO CARREGAMENTO ===\n");
+    printf("Total de linhas processadas: %d\n", linha_atual);
+    printf("Usuários carregados com sucesso: %d\n", carregados);
+    printf("IDs inválidos ignorados: %d\n", invalidos);
+    printf("IDs duplicados ignorados: %d\n", duplicados);
+    printf("===============================\n\n");
+    
+    return carregados;
+}
+
+
 
 // Menu principal
 void menu_principal() {
@@ -281,111 +355,111 @@ void menu_principal() {
         printf("2. Verificar se Usuário está cadastrado\n");
         printf("3. Gerar Relatório de Estatísticas\n");
         printf("4. Executar Testes de Desempenho\n");
-        printf("5. Sair\n");
+        printf("5. Carregar usuários do arquivo usuario.txt\n");
+        printf("6. sair\n");
         printf("____________________________________________________\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
         
         switch (opcao) {
             case 1:
-    if (ht == NULL) {
-        ht = create_hash_table();
-        bf = create_bloom_filter(100000, 0.01);
-        if (ht == NULL || bf == NULL) {
-            printf("Erro ao criar estruturas de dados!\n");
-            break;
-        }
-    }
-    
-    printf("Insira o ID do usuário (formato: 8 letras + 3 números): ");
-    scanf("%s", id);
-    
-    // Limpar o buffer após a leitura
-    limpar_buffer();
-    
-    // Validar o formato do ID
-    if (!validar_id(id)) {
-        printf("ID INVÁLIDO!\n");
-        printf("O ID deve seguir o formato: 8 letras (A-Z ou a-z) + 3 números (0-9)\n");
-        printf("Exemplos válidos: ABCDEFGH123, abcdEFGH456, XyzAbCde789\n");
-        printf("Tamanho informado: %zu caracteres\n", strlen(id));
-        
-        // Mostrar onde está o erro
-        printf("Erro encontrado: ");
-        if (strlen(id) != 11) {
-            printf("Tamanho incorreto (deve ser 11 caracteres)\n");
-        } else {
-            // Verificar posição específica do erro
-            for (int i = 0; i < 11; i++) {
-                if (i < 8) {
-                    if (!((id[i] >= 'A' && id[i] <= 'Z') || (id[i] >= 'a' && id[i] <= 'z'))) {
-                        printf("Caractere '%c' na posição %d não é uma letra\n", id[i], i+1);
-                        break;
-                    }
-                } else {
-                    if (!(id[i] >= '0' && id[i] <= '9')) {
-                        printf("Caractere '%c' na posição %d não é um número\n", id[i], i+1);
+                if (ht == NULL) {
+                    ht = create_hash_table();
+                    bf = create_bloom_filter(100000, 0.01);
+                    if (ht == NULL || bf == NULL) {
+                        printf("Erro ao criar estruturas de dados!\n");
                         break;
                     }
                 }
-            }
-        }
-        break;
-    }
-    
-    // Converter para maiúsculas (opcional - para padronização)
-    for (int i = 0; i < 8; i++) {
-        if (id[i] >= 'a' && id[i] <= 'z') {
-            id[i] = id[i] - 'a' + 'A'; // Converter para maiúscula
-        }
-    }
-    
-    if (insert_hash(ht, id)) {
-        insert_bloom(bf, id);
-        stats.total_inseridos++;
-        salvar_usuario_arquivo(id);
-        printf("Usuário %s inserido com sucesso!\n", id);
-    } else {
-        printf("Usuário %s já está cadastrado!\n", id);
-    }
-    break;
+                
+                printf("Insira o ID do usuário (formato: 8 letras + 3 números): ");
+                scanf("%s", id);
+                
+                // Limpar o buffer após a leitura
+                limpar_buffer();
+                
+                // Validar o formato do ID
+                if (!validar_id(id)) {
+                    printf("ID INVÁLIDO!\n");
+                    printf("O ID deve seguir o formato: 8 letras (A-Z ou a-z) + 3 números (0-9)\n");
+                    printf("Exemplos válidos: ABCDEFGH123, abcdEFGH456, XyzAbCde789\n");
+                    printf("Tamanho informado: %zu caracteres\n", strlen(id));
+                    
+                    // Mostrar onde está o erro
+                    printf("Erro encontrado: ");
+                    if (strlen(id) != 11) {
+                        printf("Tamanho incorreto (deve ser 11 caracteres)\n");
+                    } else {
+                        // Verificar posição específica do erro
+                        for (int i = 0; i < 11; i++) {
+                            if (i < 8) {
+                                if (!((id[i] >= 'A' && id[i] <= 'Z') || (id[i] >= 'a' && id[i] <= 'z'))) {
+                                    printf("Caractere '%c' na posição %d não é uma letra\n", id[i], i+1);
+                                    break;
+                                }
+                            } else {
+                                if (!(id[i] >= '0' && id[i] <= '9')) {
+                                    printf("Caractere '%c' na posição %d não é um número\n", id[i], i+1);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+                
+                // Converter para maiúsculas para padronização
+                for (int i = 0; i < 8; i++) {
+                    if (id[i] >= 'a' && id[i] <= 'z') {
+                        id[i] = id[i] - 'a' + 'A';
+                    }
+                }
+                
+                if (insert_hash(ht, id)) {
+                    insert_bloom(bf, id);
+                    stats.total_inseridos++;
+                    salvar_usuario_arquivo(id);
+                    printf("Usuário %s inserido com sucesso!\n", id);
+                } else {
+                    printf("Usuário %s já está cadastrado!\n", id);
+                }
+                break;
 
-// Também melhorar a seção de busca
-case 2:
-    if (ht == NULL) {
-        printf("Nenhum usuário cadastrado ainda!\n");
-        break;
-    }
-    
-    printf("Insira o ID do usuário para verificação: ");
-    scanf("%s", id);
-    limpar_buffer();
-    
-    // Validar o formato do ID na busca também
-    if (!validar_id(id)) {
-        printf("ID INVÁLIDO! O ID deve ter 8 letras + 3 números.\n");
-        break;
-    }
-    
-    // Converter para maiúsculas para consistência
-    for (int i = 0; i < 8; i++) {
-        if (id[i] >= 'a' && id[i] <= 'z') {
-            id[i] = id[i] - 'a' + 'A';
-        }
-    }
-    
-    if (search_hash(ht, id)) {
-        printf("Usuário %s ENCONTRADO na tabela hash!\n", id);
-    } else {
-        printf("Usuário %s NÃO ENCONTRADO na tabela hash!\n", id);
-        
-        if (search_bloom(bf, id)) {
-            stats.total_falsos_positivos++;
-            printf("OBS: Filtro Bloom indicou que o usuário pode existir (falso positivo).\n");
-        }
-        stats.total_nao_encontrados++;
-    }
-    break;
+            case 2:
+                if (ht == NULL) {
+                    printf("Nenhum usuário cadastrado ainda!\n");
+                    break;
+                }
+                
+                printf("Insira o ID do usuário para verificação: ");
+                scanf("%s", id);
+                limpar_buffer();
+                
+                // Validar o formato do ID na busca também
+                if (!validar_id(id)) {
+                    printf("ID INVÁLIDO! O ID deve ter 8 letras + 3 números.\n");
+                    break;
+                }
+                
+                // Converter para maiúsculas para consistência
+                for (int i = 0; i < 8; i++) {
+                    if (id[i] >= 'a' && id[i] <= 'z') {
+                        id[i] = id[i] - 'a' + 'A';
+                    }
+                }
+                
+                if (search_hash(ht, id)) {
+                    printf("Usuário %s ENCONTRADO na tabela hash!\n", id);
+                } else {
+                    printf("Usuário %s NÃO ENCONTRADO na tabela hash!\n", id);
+                    
+                    if (search_bloom(bf, id)) {
+                        stats.total_falsos_positivos++;
+                        printf("OBS: Filtro Bloom indicou que o usuário pode existir (falso positivo).\n");
+                    }
+                    stats.total_nao_encontrados++;
+                }
+                break;
                 
             case 3:
                 if (ht == NULL || bf == NULL) {
@@ -419,7 +493,22 @@ case 2:
                 stats.total_falsos_positivos = 0;
                 break;
                 
-            case 5:
+            case 5: // NOVA OPÇÃO: Carregar usuários do arquivo
+                if (ht == NULL) {
+                    ht = create_hash_table();
+                    bf = create_bloom_filter(100000, 0.01);
+                    if (ht == NULL || bf == NULL) {
+                        printf("Erro ao criar estruturas de dados!\n");
+                        break;
+                    }
+                }
+                
+                carregar_usuarios_arquivo(ht, bf, &stats);
+                break;
+                
+            
+                
+            case 6:
                 if (ht != NULL) free_hash_table(ht);
                 if (bf != NULL) free_bloom_filter(bf);
                 printf("Saindo do sistema...\n");
