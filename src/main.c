@@ -57,7 +57,7 @@ void gerar_id_aleatorio(char* id) {
 // Função para gerar relatório completo
 void gerar_relatorio(HashTable* ht, BloomFilter* bf, Estatisticas* stats, int n_testes) {
     FILE* relatorio;
-    relatorio = fopen("relatorio_cadastro.txt", "w");
+    relatorio = fopen("relatorio_cadastro.txt", "a");
     
     if (relatorio == NULL) {
         printf("Erro ao criar arquivo de relatorio!\n");
@@ -442,8 +442,10 @@ void menu_principal() {
                 gerar_relatorio(ht, bf, &stats, stats.total_inseridos);
                 break;
                 
-            case 4:
+            case 4: {
                 // Limpar estruturas anteriores
+                FILE* limpa = fopen("relatorio_cadastro.txt", "w"); 
+                    if(limpa != NULL) fclose(limpa);
                 if (ht != NULL) {
                     free_hash_table(ht);
                     ht = NULL;
@@ -465,7 +467,7 @@ void menu_principal() {
                 stats.total_nao_encontrados = 0;
                 stats.total_falsos_positivos = 0;
                 break;
-                
+            }
             case 5:
                 if (ht == NULL) {
                     ht = create_hash_table();
