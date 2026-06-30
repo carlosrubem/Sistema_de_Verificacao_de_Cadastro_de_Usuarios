@@ -256,7 +256,7 @@ void salvar_usuario_arquivo(const char* id) {
     
     // Caminho do arquivo
     char caminho_arquivo[256];
-    snprintf(caminho_arquivo, sizeof(caminho_arquivo), "../data/usuario.txt");
+    snprintf(caminho_arquivo, sizeof(caminho_arquivo), "../data/usuarios.txt");
     
     // Abrir arquivo em modo append (adiciona ao final)
     FILE* arquivo = fopen(caminho_arquivo, "a");
@@ -270,21 +270,21 @@ void salvar_usuario_arquivo(const char* id) {
     fprintf(arquivo, "%s\n",id);
     
     fclose(arquivo);
-    printf("Usuário %s salvo no arquivo ../data/usuario.txt\n", id);
+    printf("Usuário %s salvo no arquivo ../data/usuarios.txt\n", id);
 }
 
-// Função para carregar usuários do arquivo usuario.txt
+// Função para carregar usuários do arquivo usuarios.txt
 int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stats) {
-    FILE* arquivo = fopen("../data/usuario.txt", "r");
+    FILE* arquivo = fopen("../data/usuarios.txt", "r");
     
     if (arquivo == NULL) {
-        printf("Arquivo 'usuario.txt' não encontrado!\n");
-        printf("Crie o arquivo 'usuario.txt' no diretorio data.\n");
+        printf("Arquivo 'usuarios.txt' não encontrado!\n");
+        printf("Crie o arquivo 'usuarios.txt' no diretorio data.\n");
         printf("Formato: um ID por linha (até %d caracteres)\n", MAX_ID_LENGTH);
         return 0;
     }
     
-    printf("\n=== CARREGANDO USUÁRIOS DO ARQUIVO usuario.txt ===\n");
+    printf("\n=== CARREGANDO USUÁRIOS DO ARQUIVO usuarios.txt ===\n");
     
     char linha[256];
     int carregados = 0;
@@ -363,7 +363,7 @@ void menu_principal() {
         printf("2. Verificar se Usuário está cadastrado\n");
         printf("3. Gerar Relatório de Estatísticas\n");
         printf("4. Executar Testes de Desempenho\n");
-        printf("5. Carregar usuários do arquivo usuario.txt\n");
+        printf("5. Carregar usuários do arquivo usuarios.txt\n");
         printf("6. Sair\n");
         printf("____________________________________________________\n");
         printf("Escolha uma opção: ");
