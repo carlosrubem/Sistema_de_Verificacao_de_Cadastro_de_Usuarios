@@ -1,40 +1,180 @@
 ____________________________________________________
-RELATÓRIO DE CADASTRO DE USUÁRIOS
+RELATORIO DE CADASTRO DE USUARIOS
 ____________________________________________________
 
-CONFIGURAÇÕES DO SISTEMA:
+CONFIGURACOES DO SISTEMA:
 ------------------------
 Tamanho da Tabela Hash: 100003
-Tamanho do Filtro Bloom: 958506 bits
-Número de funções hash: 7
-Número de elementos esperados: 100000
+Tamanho do Filtro de Bloom: 9586 bits
+Numero de funcoes hash: 7
+Numero de elementos esperados: 1000
 Taxa de falso positivo esperada: 1.00%
 
-ESTATÍSTICAS DE DESEMPENHO:
+RESTRICOES DE ID:
+-----------------
+Comprimento maximo: 8 caracteres
+Formato: Qualquer combinacao de caracteres
+
+ESTATISTICAS DE DESEMPENHO:
 ---------------------------
-Total de inserções: 100000
-Total de buscas não encontradas: 100000
-Total de falsos positivos: 1020
-Taxa de falso positivo real: 1.02%
+Total de insercoes: 1000
+Total de buscas nao encontradas: 913
+Total de falsos positivos: 12
+Taxa de falso positivo real: 1.31%
 
-TEMPOS DE EXECUÇÃO:
+TEMPOS DE EXECUCAO:
 ------------------
-Tempo de inserção (Hash): 0.100000 segundos
-Tempo de inserção (Bloom): 0.050000 segundos
-Tempo de busca (Hash): 0.029000 segundos
-Tempo de busca (Bloom): 0.019333 segundos
+Tempo de insercao (Hash): 0.000000 segundos
+Tempo de insercao (Bloom): 0.000000 segundos
+Tempo de busca (Hash): 0.000000 segundos
+Tempo de busca (Bloom): 0.000000 segundos
 
-ANÁLISE DE DESEMPENHO:
+ANALISE DE DESEMPENHO:
 ----------------------
-Razão Hash/Bloom (Inserção): 2.00x
-Razão Hash/Bloom (Busca): 1.50x
-Taxa de acerto do Bloom: 98.98%
+Razao Hash/Bloom (Insercao): -1.#Jx
+Razao Hash/Bloom (Busca): -1.#Jx
+Taxa de acerto do Bloom: 98.69%
 
-ESTATÍSTICAS DO FILTRO BLOOM:
+ESTATISTICAS DO FILTRO DE BLOOM:
 ----------------------------
-Bits ativos: 496623 de 958506 (0.00% ocupados)
+Bits ativos: 4734 de 9586 (-70615093158431216000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00% ocupados)
+Fator de carga da Tabela Hash: 1.00%
+
+____________________________________________________
+FIM DO RELATORIO
+____________________________________________________
+____________________________________________________
+RELATORIO DE CADASTRO DE USUARIOS
+____________________________________________________
+
+CONFIGURACOES DO SISTEMA:
+------------------------
+Tamanho da Tabela Hash: 100003
+Tamanho do Filtro de Bloom: 95851 bits
+Numero de funcoes hash: 7
+Numero de elementos esperados: 10000
+Taxa de falso positivo esperada: 1.00%
+
+RESTRICOES DE ID:
+-----------------
+Comprimento maximo: 8 caracteres
+Formato: Qualquer combinacao de caracteres
+
+ESTATISTICAS DE DESEMPENHO:
+---------------------------
+Total de insercoes: 10000
+Total de buscas nao encontradas: 8407
+Total de falsos positivos: 49
+Taxa de falso positivo real: 0.58%
+
+TEMPOS DE EXECUCAO:
+------------------
+Tempo de insercao (Hash): 0.013000 segundos
+Tempo de insercao (Bloom): 0.006500 segundos
+Tempo de busca (Hash): 0.003000 segundos
+Tempo de busca (Bloom): 0.002000 segundos
+
+ANALISE DE DESEMPENHO:
+----------------------
+Razao Hash/Bloom (Insercao): 2.00x
+Razao Hash/Bloom (Busca): 1.50x
+Taxa de acerto do Bloom: 99.42%
+
+ESTATISTICAS DO FILTRO DE BLOOM:
+----------------------------
+Bits ativos: 44435 de 95851 (2492781283847052300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00% ocupados)
+Fator de carga da Tabela Hash: 10.00%
+
+____________________________________________________
+FIM DO RELATORIO
+____________________________________________________
+____________________________________________________
+RELATORIO DE CADASTRO DE USUARIOS
+____________________________________________________
+
+CONFIGURACOES DO SISTEMA:
+------------------------
+Tamanho da Tabela Hash: 100003
+Tamanho do Filtro de Bloom: 958506 bits
+Numero de funcoes hash: 7
+Numero de elementos esperados: 100000
+Taxa de falso positivo esperada: 1.00%
+
+RESTRICOES DE ID:
+-----------------
+Comprimento maximo: 8 caracteres
+Formato: Qualquer combinacao de caracteres
+
+ESTATISTICAS DE DESEMPENHO:
+---------------------------
+Total de insercoes: 100000
+Total de buscas nao encontradas: 74733
+Total de falsos positivos: 229
+Taxa de falso positivo real: 0.31%
+
+TEMPOS DE EXECUCAO:
+------------------
+Tempo de insercao (Hash): 0.074000 segundos
+Tempo de insercao (Bloom): 0.037000 segundos
+Tempo de busca (Hash): 0.017000 segundos
+Tempo de busca (Bloom): 0.011333 segundos
+
+ANALISE DE DESEMPENHO:
+----------------------
+Razao Hash/Bloom (Insercao): 2.00x
+Razao Hash/Bloom (Busca): 1.50x
+Taxa de acerto do Bloom: 99.69%
+
+ESTATISTICAS DO FILTRO DE BLOOM:
+----------------------------
+Bits ativos: 412835 de 958506 (-1978309639787782800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00% ocupados)
 Fator de carga da Tabela Hash: 100.00%
 
 ____________________________________________________
-FIM DO RELATÓRIO
+FIM DO RELATORIO
+____________________________________________________
+____________________________________________________
+RELATORIO DE CADASTRO DE USUARIOS
+____________________________________________________
+
+CONFIGURACOES DO SISTEMA:
+------------------------
+Tamanho da Tabela Hash: 100003
+Tamanho do Filtro de Bloom: 958506 bits
+Numero de funcoes hash: 7
+Numero de elementos esperados: 100000
+Taxa de falso positivo esperada: 1.00%
+
+RESTRICOES DE ID:
+-----------------
+Comprimento maximo: 8 caracteres
+Formato: Qualquer combinacao de caracteres
+
+ESTATISTICAS DE DESEMPENHO:
+---------------------------
+Total de insercoes: 0
+Total de buscas nao encontradas: 0
+Total de falsos positivos: 0
+Taxa de falso positivo real: 0.00%
+
+TEMPOS DE EXECUCAO:
+------------------
+Tempo de insercao (Hash): 0.000000 segundos
+Tempo de insercao (Bloom): 0.000000 segundos
+Tempo de busca (Hash): 0.000000 segundos
+Tempo de busca (Bloom): 0.000000 segundos
+
+ANALISE DE DESEMPENHO:
+----------------------
+Razao Hash/Bloom (Insercao): -1.#Jx
+Razao Hash/Bloom (Busca): -1.#Jx
+Taxa de acerto do Bloom: 100.00%
+
+ESTATISTICAS DO FILTRO DE BLOOM:
+----------------------------
+Bits ativos: 0 de 958506 (0.00% ocupados)
+Fator de carga da Tabela Hash: 0.00%
+
+____________________________________________________
+FIM DO RELATORIO
 ____________________________________________________
