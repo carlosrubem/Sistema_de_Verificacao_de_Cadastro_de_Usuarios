@@ -1,0 +1,40 @@
+____________________________________________________
+RELATÓRIO DE CADASTRO DE USUÁRIOS
+____________________________________________________
+
+CONFIGURAÇÕES DO SISTEMA:
+------------------------
+Tamanho da Tabela Hash: 100003
+Tamanho do Filtro Bloom: 958506 bits
+Número de funções hash: 7
+Número de elementos esperados: 100000
+Taxa de falso positivo esperada: 1.00%
+
+ESTATÍSTICAS DE DESEMPENHO:
+---------------------------
+Total de inserções: 100000
+Total de buscas não encontradas: 100000
+Total de falsos positivos: 1020
+Taxa de falso positivo real: 1.02%
+
+TEMPOS DE EXECUÇÃO:
+------------------
+Tempo de inserção (Hash): 0.100000 segundos
+Tempo de inserção (Bloom): 0.050000 segundos
+Tempo de busca (Hash): 0.029000 segundos
+Tempo de busca (Bloom): 0.019333 segundos
+
+ANÁLISE DE DESEMPENHO:
+----------------------
+Razão Hash/Bloom (Inserção): 2.00x
+Razão Hash/Bloom (Busca): 1.50x
+Taxa de acerto do Bloom: 98.98%
+
+ESTATÍSTICAS DO FILTRO BLOOM:
+----------------------------
+Bits ativos: 496623 de 958506 (0.00% ocupados)
+Fator de carga da Tabela Hash: 100.00%
+
+____________________________________________________
+FIM DO RELATÓRIO
+____________________________________________________
