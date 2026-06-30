@@ -54,7 +54,7 @@ Para navegar, digite o número inteiro correspondente à opção desejada.
 
 ### 1. Inserir Usuário
 Cadastra um novo usuário utilizando um identificador único.
-- **Exemplo:** `INSERIR jaoa123`
+- **Exemplo:** `INSERIR joao123`
 - O usuário é inserido tanto na Tabela Hash quanto no Filtro de Bloom
 - Quando cadastrado com sucesso, o registro do usuário é salvo em /data/usuario.txt
 
