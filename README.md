@@ -43,9 +43,8 @@ ____________________________________________________
 2. Verificar se Usuário está cadastrado
 3. Gerar Relatório de Estatísticas
 4. Executar Testes de Desempenho
-5. Sair
-____________________________________________________
-Escolha uma opção: 
+5. Carregar usuários do arquivo usuario.txt
+6. Sair
 ```
 
 Para navegar, digite o número inteiro correspondente à opção desejada.
@@ -54,7 +53,7 @@ Para navegar, digite o número inteiro correspondente à opção desejada.
 
 ### 1. Inserir Usuário
 Cadastra um novo usuário utilizando um identificador único.
-- **Exemplo:** `INSERIR joao123`
+- **Exemplo:** `1->joao123`
 - O usuário é inserido tanto na Tabela Hash quanto no Filtro de Bloom
 - Quando cadastrado com sucesso, o registro do usuário é salvo em /data/usuario.txt
 
@@ -67,8 +66,8 @@ Consulta se um usuário existe no sistema seguindo o fluxo:
 4. Informa o resultado final
 
 - **Exemplo:** 
-  - `CONSULTAR matheusw123` → Usuário encontrado
-  - `CONSULTAR anapijam777` → Usuário inexistente
+  - `2-> matheusw123` → Usuário encontrado
+  - `2->anapijam777` → Usuário inexistente
 
 ### 3. Relatório de Estatísticas
 Exibe métricas detalhadas do sistema:
@@ -90,3 +89,8 @@ Para cada cenário, são medidos:
 - Tempo sem Bloom (busca direta na Tabela Hash)
 - Tempo com Bloom (busca utilizando Filtro de Bloom)
 - Taxa de falsos positivos
+
+### 5. Carregar Usuarios do Arquivo usuario.txt
+- Arquivo de texto editavel.
+- Ao cadastrar um usuario pelo programa, salva automaticamente.
+- A cada nova execucao do codigo, e' necessario fazer o cadastro do arquivo novamente.
