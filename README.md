@@ -6,7 +6,7 @@ Sistema desenvolvido em C para armazenamento e consulta eficiente de cadastros d
 - **Tabela Hash**: armazenamento e recuperação exata dos elementos
 - **Filtro de Bloom**: estrutura probabilística para acelerar consultas de existência
 
-O sistema permite verificar rapidamente se um usuário está cadastrado, reduzindo acessos desnecessários à tabela hash principal através do filtro de bloom.
+O sistema permite verificar rapidamente se um usuário está cadastrado, reduzindo acessos desnecessários à tabela hash principal através do Filtro de Bloom.
 
 ## Requisitos de Compilação
 
@@ -37,13 +37,13 @@ Ao executar o programa, o seguinte menu será exibido:
 
 ```
 ____________________________________________________
-        SISTEMA DE CADASTRO DE USUÁRIOS
+        SISTEMA DE CADASTRO DE USUARIOS
 ____________________________________________________
-1. Inserir Usuário
-2. Verificar se Usuário está cadastrado
-3. Gerar Relatório de Estatísticas
+1. Inserir Usuario
+2. Verificar se Usuario esta cadastrado
+3. Gerar Relatorio de Estatisticas
 4. Executar Testes de Desempenho
-5. Carregar usuários do arquivo usuario.txt
+5. Carregar usuarios do arquivo usuarios.txt
 6. Sair
 ```
 
@@ -55,7 +55,7 @@ Para navegar, digite o número inteiro correspondente à opção desejada.
 Cadastra um novo usuário utilizando um identificador único.
 - **Exemplo:** `1->joao123`
 - O usuário é inserido tanto na Tabela Hash quanto no Filtro de Bloom
-- Quando cadastrado com sucesso, o registro do usuário é salvo em /data/usuario.txt
+- Quando cadastrado com sucesso, o registro do usuário é salvo em /data/usuarios.txt
 
 ### 2. Verificar Usuário
 Consulta se um usuário existe no sistema seguindo o fluxo:
@@ -90,7 +90,7 @@ Para cada cenário, são medidos:
 - Tempo com Bloom (busca utilizando Filtro de Bloom)
 - Taxa de falsos positivos
 
-### 5. Carregar Usuarios do Arquivo usuario.txt
-- Arquivo de texto editavel.
-- Ao cadastrar um usuario pelo programa, salva automaticamente.
-- A cada nova execucao do codigo, e' necessario fazer o cadastro do arquivo novamente.
+### 5. Carregar Usuários do Arquivo usuarios.txt
+- Arquivo de texto editável.
+- Ao cadastrar um usuário pelo programa, salva automaticamente.
+- A cada nova execucão do código, é necessário fazer o cadastro do arquivo novamente.
