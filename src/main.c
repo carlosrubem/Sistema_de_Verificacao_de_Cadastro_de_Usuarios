@@ -60,55 +60,55 @@ void gerar_relatorio(HashTable* ht, BloomFilter* bf, Estatisticas* stats, int n_
     relatorio = fopen("relatorio_cadastro.txt", "w");
     
     if (relatorio == NULL) {
-        printf("Erro ao criar arquivo de relatório!\n");
+        printf("Erro ao criar arquivo de relatorio!\n");
         return;
     }
 
     fprintf(relatorio, "____________________________________________________\n");
-    fprintf(relatorio, "RELATÓRIO DE CADASTRO DE USUÁRIOS\n");
+    fprintf(relatorio, "RELATORIO DE CADASTRO DE USUARIOS\n");
     fprintf(relatorio, "____________________________________________________\n\n");
     
-    fprintf(relatorio, "CONFIGURAÇÕES DO SISTEMA:\n");
+    fprintf(relatorio, "CONFIGURACOES DO SISTEMA:\n");
     fprintf(relatorio, "------------------------\n");
     fprintf(relatorio, "Tamanho da Tabela Hash: %d\n", HASH_SIZE);
-    fprintf(relatorio, "Tamanho do Filtro Bloom: %lu bits\n", bf->total_bits);
-    fprintf(relatorio, "Número de funções hash: %u\n", bf->num_hashes);
-    fprintf(relatorio, "Número de elementos esperados: %u\n", bf->n_elementos);
+    fprintf(relatorio, "Tamanho do Filtro de Bloom: %lu bits\n", bf->total_bits);
+    fprintf(relatorio, "Numero de funcoes hash: %u\n", bf->num_hashes);
+    fprintf(relatorio, "Numero de elementos esperados: %u\n", bf->n_elementos);
     fprintf(relatorio, "Taxa de falso positivo esperada: %.2f%%\n\n", TAXA_FALSO_POSITIVO * 100);
     
-    fprintf(relatorio, "RESTRIÇÕES DE ID:\n");
+    fprintf(relatorio, "RESTRICOES DE ID:\n");
     fprintf(relatorio, "-----------------\n");
-    fprintf(relatorio, "Comprimento máximo: %d caracteres\n", MAX_ID_LENGTH);
-    fprintf(relatorio, "Formato: Qualquer combinação de caracteres\n\n");
+    fprintf(relatorio, "Comprimento maximo: %d caracteres\n", MAX_ID_LENGTH);
+    fprintf(relatorio, "Formato: Qualquer combinacao de caracteres\n\n");
     
-    fprintf(relatorio, "ESTATÍSTICAS DE DESEMPENHO:\n");
+    fprintf(relatorio, "ESTATISTICAS DE DESEMPENHO:\n");
     fprintf(relatorio, "---------------------------\n");
-    fprintf(relatorio, "Total de inserções: %u\n", stats->total_inseridos);
-    fprintf(relatorio, "Total de buscas não encontradas: %u\n", stats->total_nao_encontrados);
+    fprintf(relatorio, "Total de insercoes: %u\n", stats->total_inseridos);
+    fprintf(relatorio, "Total de buscas nao encontradas: %u\n", stats->total_nao_encontrados);
     fprintf(relatorio, "Total de falsos positivos: %u\n", stats->total_falsos_positivos);
     fprintf(relatorio, "Taxa de falso positivo real: %.2f%%\n\n", 
             (stats->total_nao_encontrados > 0) ? 
             ((double)stats->total_falsos_positivos / stats->total_nao_encontrados * 100) : 0.0);
     
-    fprintf(relatorio, "TEMPOS DE EXECUÇÃO:\n");
+    fprintf(relatorio, "TEMPOS DE EXECUCAO:\n");
     fprintf(relatorio, "------------------\n");
-    fprintf(relatorio, "Tempo de inserção (Hash): %.6f segundos\n", stats->tempo_insercao_hash);
-    fprintf(relatorio, "Tempo de inserção (Bloom): %.6f segundos\n", stats->tempo_insercao_bloom);
+    fprintf(relatorio, "Tempo de insercao (Hash): %.6f segundos\n", stats->tempo_insercao_hash);
+    fprintf(relatorio, "Tempo de insercao (Bloom): %.6f segundos\n", stats->tempo_insercao_bloom);
     fprintf(relatorio, "Tempo de busca (Hash): %.6f segundos\n", stats->tempo_busca_hash);
     fprintf(relatorio, "Tempo de busca (Bloom): %.6f segundos\n\n", stats->tempo_busca_bloom);
     
-    fprintf(relatorio, "ANÁLISE DE DESEMPENHO:\n");
+    fprintf(relatorio, "ANALISE DE DESEMPENHO:\n");
     fprintf(relatorio, "----------------------\n");
-    fprintf(relatorio, "Razão Hash/Bloom (Inserção): %.2fx\n", 
+    fprintf(relatorio, "Razao Hash/Bloom (Insercao): %.2fx\n", 
             (stats->tempo_insercao_hash / stats->tempo_insercao_bloom));
-    fprintf(relatorio, "Razão Hash/Bloom (Busca): %.2fx\n",
+    fprintf(relatorio, "Razao Hash/Bloom (Busca): %.2fx\n",
             (stats->tempo_busca_hash / stats->tempo_busca_bloom));
     fprintf(relatorio, "Taxa de acerto do Bloom: %.2f%%\n",
             (stats->total_nao_encontrados > 0) ?
             (100.0 - ((double)stats->total_falsos_positivos / stats->total_nao_encontrados * 100)) : 100.0);
     
     // Estatísticas adicionais do Filtro Bloom
-    fprintf(relatorio, "\nESTATÍSTICAS DO FILTRO BLOOM:\n");
+    fprintf(relatorio, "\nESTATISTICAS DO FILTRO DE BLOOM:\n");
     fprintf(relatorio, "----------------------------\n");
     
     // Contar bits ativos
@@ -130,11 +130,11 @@ void gerar_relatorio(HashTable* ht, BloomFilter* bf, Estatisticas* stats, int n_
             (double)stats->total_inseridos / HASH_SIZE * 100);
     
     fprintf(relatorio, "\n____________________________________________________\n");
-    fprintf(relatorio, "FIM DO RELATÓRIO\n");
+    fprintf(relatorio, "FIM DO RELATORIO\n");
     fprintf(relatorio, "____________________________________________________\n");
     
     fclose(relatorio);
-    printf("Relatório gerado com sucesso em 'relatorio_cadastro.txt'\n");
+    printf("Relatorio gerado com sucesso em 'relatorio_cadastro.txt'\n");
 }
 
 // Função para executar testes de desempenho
@@ -150,7 +150,7 @@ void executar_testes(int n) {
     
     BloomFilter* bf = create_bloom_filter(n, TAXA_FALSO_POSITIVO);
     if (bf == NULL) {
-        printf("Erro ao criar filtro bloom!\n");
+        printf("Erro ao criar filtro de bloom!\n");
         free_hash_table(ht);
         return;
     }
@@ -162,7 +162,7 @@ void executar_testes(int n) {
     // Array para armazenar os IDs gerados (para busca posterior)
     char** ids_inseridos = (char**)malloc(n * sizeof(char*));
     if (ids_inseridos == NULL) {
-        printf("Erro ao alocar memória para IDs!\n");
+        printf("Erro ao alocar memoria para IDs!\n");
         free_hash_table(ht);
         free_bloom_filter(bf);
         return;
@@ -190,7 +190,7 @@ void executar_testes(int n) {
     stats.total_inseridos = n;
     
     printf("IDs inseridos com sucesso!\n");
-    printf("Tempo de inserção (Hash + Bloom): %.6f segundos\n", stats.tempo_insercao_hash);
+    printf("Tempo de insercao (Hash + Bloom): %.6f segundos\n", stats.tempo_insercao_hash);
     
     // Testar busca para IDs existentes (todos devem ser encontrados)
     printf("\nTestando busca para IDs existentes...\n");
@@ -211,7 +211,7 @@ void executar_testes(int n) {
     printf("Tempo de busca (Hash): %.6f segundos\n", stats.tempo_busca_hash);
     
     // Testar busca para IDs não existentes (para medir falsos positivos)
-    printf("\nTestando busca para IDs não existentes...\n");
+    printf("\nTestando busca para IDs nao existentes...\n");
     int nao_encontrados = 0;
     int falsos_positivos = 0;
     
@@ -232,8 +232,8 @@ void executar_testes(int n) {
     stats.total_nao_encontrados = nao_encontrados;
     stats.total_falsos_positivos = falsos_positivos;
     
-    printf("Total de buscas para IDs não existentes: %d\n", nao_encontrados);
-    printf("Falsos positivos no Bloom: %d (%.2f%%)\n", 
+    printf("Total de buscas para IDs nao existentes: %d\n", nao_encontrados);
+    printf("Falsos positivos no Filtro de Bloom: %d (%.2f%%)\n", 
             falsos_positivos, 
             nao_encontrados > 0 ? (double)falsos_positivos / nao_encontrados * 100 : 0.0);
     
@@ -262,7 +262,7 @@ void salvar_usuario_arquivo(const char* id) {
     FILE* arquivo = fopen(caminho_arquivo, "a");
     
     if (arquivo == NULL) {
-        printf("Erro ao criar/abrir arquivo de usuários em ../data!\n");
+        printf("Erro ao criar/abrir arquivo de usuarios em ../data!\n");
         return;
     }
     
@@ -270,7 +270,7 @@ void salvar_usuario_arquivo(const char* id) {
     fprintf(arquivo, "%s\n",id);
     
     fclose(arquivo);
-    printf("Usuário %s salvo no arquivo ../data/usuarios.txt\n", id);
+    printf("Usuario %s salvo no arquivo ../data/usuarios.txt\n", id);
 }
 
 // Função para carregar usuários do arquivo usuarios.txt
@@ -278,13 +278,13 @@ int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stat
     FILE* arquivo = fopen("../data/usuarios.txt", "r");
     
     if (arquivo == NULL) {
-        printf("Arquivo 'usuarios.txt' não encontrado!\n");
+        printf("Arquivo 'usuarios.txt' nao encontrado!\n");
         printf("Crie o arquivo 'usuarios.txt' no diretorio data.\n");
-        printf("Formato: um ID por linha (até %d caracteres)\n", MAX_ID_LENGTH);
+        printf("Formato: um ID por linha (ate %d caracteres)\n", MAX_ID_LENGTH);
         return 0;
     }
     
-    printf("\n=== CARREGANDO USUÁRIOS DO ARQUIVO usuarios.txt ===\n");
+    printf("\n=== CARREGANDO USUARIOS DO ARQUIVO usuarios.txt ===\n");
     
     char linha[256];
     int carregados = 0;
@@ -315,7 +315,7 @@ int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stat
         
         // Validar o formato do ID (agora apenas verifica comprimento)
         if (!validar_id(id)) {
-            printf("Linha %d: ID inválido '%s' (deve ter entre 1 e %d caracteres) - ignorado\n", 
+            printf("Linha %d: ID invalido '%s' (deve ter entre 1 e %d caracteres) - ignorado\n", 
                    linha_atual, id, MAX_ID_LENGTH);
             invalidos++;
             continue;
@@ -326,9 +326,9 @@ int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stat
             insert_bloom(bf, id);
             stats->total_inseridos++;
             carregados++;
-            printf("Linha %d: Usuário %s cadastrado com sucesso!\n", linha_atual, id);
+            printf("Linha %d: Usuario %s cadastrado com sucesso!\n", linha_atual, id);
         } else {
-            printf("Linha %d: Usuário %s já existe - ignorado\n", linha_atual, id);
+            printf("Linha %d: Usuario %s ja existe - ignorado\n", linha_atual, id);
             duplicados++;
         }
     }
@@ -337,8 +337,8 @@ int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stat
     
     printf("\n=== RESUMO DO CARREGAMENTO ===\n");
     printf("Total de linhas processadas: %d\n", linha_atual);
-    printf("Usuários carregados com sucesso: %d\n", carregados);
-    printf("IDs inválidos ignorados: %d\n", invalidos);
+    printf("Usuarios carregados com sucesso: %d\n", carregados);
+    printf("IDs invalidos ignorados: %d\n", invalidos);
     printf("IDs duplicados ignorados: %d\n", duplicados);
     printf("===============================\n\n");
     
@@ -357,16 +357,16 @@ void menu_principal() {
     
     while (1) {
         printf("\n____________________________________________________\n");
-        printf("        SISTEMA DE CADASTRO DE USUÁRIOS\n");
+        printf("        SISTEMA DE CADASTRO DE USUARIOS\n");
         printf("____________________________________________________\n");
-        printf("1. Inserir Usuário\n");
-        printf("2. Verificar se Usuário está cadastrado\n");
-        printf("3. Gerar Relatório de Estatísticas\n");
+        printf("1. Inserir Usuario\n");
+        printf("2. Verificar se Usuario esta cadastrado\n");
+        printf("3. Gerar Relatorio de Estatisticas\n");
         printf("4. Executar Testes de Desempenho\n");
-        printf("5. Carregar usuários do arquivo usuarios.txt\n");
+        printf("5. Carregar usuarios do arquivo usuarios.txt\n");
         printf("6. Sair\n");
         printf("____________________________________________________\n");
-        printf("Escolha uma opção: ");
+        printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
         limpar_buffer();
         
@@ -381,7 +381,7 @@ void menu_principal() {
                     }
                 }
                 
-                printf("Insira o ID do usuário (até %d caracteres): ", MAX_ID_LENGTH);
+                printf("Insira o ID do usuario (ate %d caracteres): ", MAX_ID_LENGTH);
                 fgets(id, sizeof(id), stdin);
                 
                 // Remover newline
@@ -389,7 +389,7 @@ void menu_principal() {
                 
                 // Validar o formato do ID (agora apenas verifica comprimento)
                 if (!validar_id(id)) {
-                    printf("ID INVÁLIDO!\n");
+                    printf("ID INVALIDO!\n");
                     printf("O ID deve ter entre 1 e %d caracteres.\n", MAX_ID_LENGTH);
                     printf("Tamanho informado: %zu caracteres\n", strlen(id));
                     break;
@@ -399,36 +399,36 @@ void menu_principal() {
                     insert_bloom(bf, id);
                     stats.total_inseridos++;
                     salvar_usuario_arquivo(id);
-                    printf("Usuário '%s' inserido com sucesso!\n", id);
+                    printf("Usuario '%s' inserido com sucesso!\n", id);
                 } else {
-                    printf("Usuário '%s' já está cadastrado!\n", id);
+                    printf("Usuario '%s' ja esta cadastrado!\n", id);
                 }
                 break;
 
             case 2:
                 if (ht == NULL) {
-                    printf("Nenhum usuário cadastrado ainda!\n");
+                    printf("Nenhum usuario cadastrado ainda!\n");
                     break;
                 }
                 
-                printf("Insira o ID do usuário para verificação (até %d caracteres): ", MAX_ID_LENGTH);
+                printf("Insira o ID do usuario para verificacao (ate %d caracteres): ", MAX_ID_LENGTH);
                 fgets(id, sizeof(id), stdin);
                 id[strcspn(id, "\n")] = '\0';
                 
                 // Validar o formato do ID na busca também
                 if (!validar_id(id)) {
-                    printf("ID INVÁLIDO! O ID deve ter entre 1 e %d caracteres.\n", MAX_ID_LENGTH);
+                    printf("ID INVALIDO! O ID deve ter entre 1 e %d caracteres.\n", MAX_ID_LENGTH);
                     break;
                 }
                 
                 if (search_hash(ht, id)) {
-                    printf("Usuário '%s' ENCONTRADO na tabela hash!\n", id);
+                    printf("Usuario '%s' ENCONTRADO na tabela hash!\n", id);
                 } else {
-                    printf("Usuário '%s' NÃO ENCONTRADO na tabela hash!\n", id);
+                    printf("Usuario '%s' NAO ENCONTRADO na tabela hash!\n", id);
                     
                     if (search_bloom(bf, id)) {
                         stats.total_falsos_positivos++;
-                        printf("OBS: Filtro Bloom indicou que o usuário pode existir (falso positivo).\n");
+                        printf("OBS: Filtro de Bloom indicou que o usuario pode existir (falso positivo).\n");
                     }
                     stats.total_nao_encontrados++;
                 }
@@ -436,7 +436,7 @@ void menu_principal() {
                 
             case 3:
                 if (ht == NULL || bf == NULL) {
-                    printf("Nenhum dado para gerar relatório!\n");
+                    printf("Nenhum dado para gerar relatorio!\n");
                     break;
                 }
                 gerar_relatorio(ht, bf, &stats, stats.total_inseridos);
@@ -486,7 +486,7 @@ void menu_principal() {
                 return;
                 
             default:
-                printf("Opção inválida! Tente novamente.\n");
+                printf("Opcao invalida! Tente novamente.\n");
         }
     }
 }
