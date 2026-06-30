@@ -256,7 +256,7 @@ void salvar_usuario_arquivo(const char* id) {
     
     // Caminho do arquivo
     char caminho_arquivo[256];
-    snprintf(caminho_arquivo, sizeof(caminho_arquivo), "../data/usuarios.txt");
+    snprintf(caminho_arquivo, sizeof(caminho_arquivo), "../data/usuario.txt");
     
     // Abrir arquivo em modo append (adiciona ao final)
     FILE* arquivo = fopen(caminho_arquivo, "a");
@@ -270,12 +270,12 @@ void salvar_usuario_arquivo(const char* id) {
     fprintf(arquivo, "%s\n",id);
     
     fclose(arquivo);
-    printf("Usuário %s salvo no arquivo ../data/usuarios.txt\n", id);
+    printf("Usuário %s salvo no arquivo ../data/usuario.txt\n", id);
 }
 
 // Função para carregar usuários do arquivo usuario.txt
 int carregar_usuarios_arquivo(HashTable* ht, BloomFilter* bf, Estatisticas* stats) {
-    FILE* arquivo = fopen("../data/usuarios.txt", "r");
+    FILE* arquivo = fopen("../data/usuario.txt", "r");
     
     if (arquivo == NULL) {
         printf("Arquivo 'usuario.txt' não encontrado!\n");
