@@ -93,4 +93,4 @@ Para cada cenário, são medidos:
 ### 5. Carregar Usuários do Arquivo usuarios.txt
 - Arquivo de texto editável.
 - Ao cadastrar um usuário pelo programa, salva automaticamente.
-- A cada nova execucão do código, é necessário fazer o cadastro do arquivo novamente.
+- A cada nova execução do código, é necessário fazer o cadastro do arquivo novamente.
